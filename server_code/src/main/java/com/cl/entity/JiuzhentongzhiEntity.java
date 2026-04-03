@@ -100,8 +100,28 @@ public class JiuzhentongzhiEntity<T> implements Serializable {
 	/**
 	 * 通知备注
 	 */
-					
+				
 	private String tongzhibeizhu;
+	
+	/**
+	 * 通知状态(0:待通知,1:已发送,2:已接收)
+	 */
+				
+	private String tongzhizhuangtai;
+	
+	/**
+	 * 用户接收时间
+	 */
+				
+	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat 		
+	private Date jieshoushijian;
+	
+	/**
+	 * 关联预约ID
+	 */
+				
+	private Long yuyueid;
 	
 
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
@@ -216,6 +236,42 @@ public class JiuzhentongzhiEntity<T> implements Serializable {
 	 */
 	public String getTongzhibeizhu() {
 		return tongzhibeizhu;
+	}
+	/**
+	 * 设置：通知状态(0:待通知,1:已发送,2:已接收)
+	 */
+	public void setTongzhizhuangtai(String tongzhizhuangtai) {
+		this.tongzhizhuangtai = tongzhizhuangtai;
+	}
+	/**
+	 * 获取：通知状态(0:待通知,1:已发送,2:已接收)
+	 */
+	public String getTongzhizhuangtai() {
+		return tongzhizhuangtai;
+	}
+	/**
+	 * 设置：用户接收时间
+	 */
+	public void setJieshoushijian(Date jieshoushijian) {
+		this.jieshoushijian = jieshoushijian;
+	}
+	/**
+	 * 获取：用户接收时间
+	 */
+	public Date getJieshoushijian() {
+		return jieshoushijian;
+	}
+	/**
+	 * 设置：关联预约ID
+	 */
+	public void setYuyueid(Long yuyueid) {
+		this.yuyueid = yuyueid;
+	}
+	/**
+	 * 获取：关联预约ID
+	 */
+	public Long getYuyueid() {
+		return yuyueid;
 	}
 
 }

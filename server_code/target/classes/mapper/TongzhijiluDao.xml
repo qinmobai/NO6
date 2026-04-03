@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cl.dao.TongzhijiluDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.cl.entity.TongzhijiluEntity" id="tongzhijiluMap">
+        <result property="id" column="id"/>
+        <result property="addtime" column="addtime"/>
+        <result property="yuyueid" column="yuyueid"/>
+        <result property="yuyuebianhao" column="yuyuebianhao"/>
+        <result property="zhanghao" column="zhanghao"/>
+        <result property="shouji" column="shouji"/>
+        <result property="yishengzhanghao" column="yishengzhanghao"/>
+        <result property="dianhua" column="dianhua"/>
+        <result property="tongzhileixing" column="tongzhileixing"/>
+        <result property="tongzhineirong" column="tongzhineirong"/>
+        <result property="fasongshijian" column="fasongshijian"/>
+        <result property="jieshouzhuangtai" column="jieshouzhuangtai"/>
+        <result property="shibaiyuanyin" column="shibaiyuanyin"/>
+        <result property="zhongshicishu" column="zhongshicishu"/>
+        <result property="zuihouzhongshishijian" column="zuihouzhongshishijian"/>
+        <result property="chulizhuangtai" column="chulizhuangtai"/>
+        <result property="chulibeizhu" column="chulibeizhu"/>
+        <result property="chuliren" column="chuliren"/>
+        <result property="chulishijian" column="chulishijian"/>
+    </resultMap>
+
+    <resultMap type="com.cl.entity.view.TongzhijiluView" id="tongzhijiluViewMap">
+        <result property="id" column="id"/>
+        <result property="addtime" column="addtime"/>
+        <result property="yuyueid" column="yuyueid"/>
+        <result property="yuyuebianhao" column="yuyuebianhao"/>
+        <result property="zhanghao" column="zhanghao"/>
+        <result property="shouji" column="shouji"/>
+        <result property="yishengzhanghao" column="yishengzhanghao"/>
+        <result property="dianhua" column="dianhua"/>
+        <result property="tongzhileixing" column="tongzhileixing"/>
+        <result property="tongzhineirong" column="tongzhineirong"/>
+        <result property="fasongshijian" column="fasongshijian"/>
+        <result property="jieshouzhuangtai" column="jieshouzhuangtai"/>
+        <result property="shibaiyuanyin" column="shibaiyuanyin"/>
+        <result property="zhongshicishu" column="zhongshicishu"/>
+        <result property="zuihouzhongshishijian" column="zuihouzhongshishijian"/>
+        <result property="chulizhuangtai" column="chulizhuangtai"/>
+        <result property="chulibeizhu" column="chulibeizhu"/>
+        <result property="chuliren" column="chuliren"/>
+        <result property="chulishijian" column="chulishijian"/>
+    </resultMap>
+
+	<select id="selectListView" resultMap="tongzhijiluViewMap">
+		SELECT * FROM tongzhijilu 
+		<where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectView" resultMap="tongzhijiluViewMap">
+		SELECT * FROM tongzhijilu <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<!-- 查询需要重试的通知记录 -->
+	<select id="selectRetryList" resultMap="tongzhijiluMap">
+		SELECT * FROM tongzhijilu 
+		WHERE jieshouzhuangtai = '2' 
+		AND (chulizhuangtai = '0' OR chulizhuangtai IS NULL)
+		AND zhongshicishu &lt; #{maxRetryCount}
+		ORDER BY addtime ASC
+	</select>
+	
+	<!-- 查询发送失败且未处理的记录 -->
+	<select id="selectFailedList" resultMap="tongzhijiluViewMap">
+		SELECT * FROM tongzhijilu <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+
+</mapper>

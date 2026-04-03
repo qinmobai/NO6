@@ -29,6 +29,7 @@ import com.cl.entity.view.YishengyuyueView;
 
 import com.cl.service.YishengyuyueService;
 import com.cl.service.TokenService;
+import com.cl.service.NotificationService;
 import com.cl.utils.PageUtils;
 import com.cl.utils.R;
 import com.cl.utils.MPUtil;
@@ -47,6 +48,9 @@ import com.cl.utils.CommonUtil;
 public class YishengyuyueController {
     @Autowired
     private YishengyuyueService yishengyuyueService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
 
 
@@ -185,6 +189,8 @@ public class YishengyuyueController {
     @SysLog("审核医生预约")
     public R update(@RequestBody Long[] ids, @RequestParam String sfsh, @RequestParam String shhf){
         List<YishengyuyueEntity> list = new ArrayList<YishengyuyueEntity>();
+        List<Map<String, Object>> notificationResults = new ArrayList<>();
+        
         for(Long id : ids) {
             YishengyuyueEntity yishengyuyue = yishengyuyueService.selectById(id);
             yishengyuyue.setSfsh(sfsh);
@@ -192,7 +198,27 @@ public class YishengyuyueController {
             list.add(yishengyuyue);
         }
         yishengyuyueService.updateBatchById(list);
-        return R.ok();
+        
+        // 审核通过后立即发送通知
+        if("是".equals(sfsh)) {
+            for(YishengyuyueEntity yishengyuyue : list) {
+                try {
+                    Map<String, Object> result = notificationService.sendAllNotifications(yishengyuyue);
+                    result.put("yuyueId", yishengyuyue.getId());
+                    result.put("yuyuebianhao", yishengyuyue.getYuyuebianhao());
+                    notificationResults.add(result);
+                } catch (Exception e) {
+                    Map<String, Object> errorResult = new HashMap<>();
+                    errorResult.put("yuyueId", yishengyuyue.getId());
+                    errorResult.put("yuyuebianhao", yishengyuyue.getYuyuebianhao());
+                    errorResult.put("success", false);
+                    errorResult.put("message", "通知发送异常: " + e.getMessage());
+                    notificationResults.add(errorResult);
+                }
+            }
+        }
+        
+        return R.ok().put("notificationResults", notificationResults);
     }
 
 

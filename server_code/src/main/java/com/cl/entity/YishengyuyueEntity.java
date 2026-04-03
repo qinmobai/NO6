@@ -104,8 +104,22 @@ public class YishengyuyueEntity<T> implements Serializable {
 	/**
 	 * 回复内容
 	 */
-					
+				
 	private String shhf;
+	
+	/**
+	 * 通知发送状态(0:未发送,1:已发送,2:部分失败,3:全部失败)
+	 */
+				
+	private String tongzhifasongzhuangtai;
+	
+	/**
+	 * 最后通知发送时间
+	 */
+				
+	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat 		
+	private Date zuihoutongzhishijian;
 	
 
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
@@ -232,6 +246,30 @@ public class YishengyuyueEntity<T> implements Serializable {
 	 */
 	public String getShhf() {
 		return shhf;
+	}
+	/**
+	 * 设置：通知发送状态(0:未发送,1:已发送,2:部分失败,3:全部失败)
+	 */
+	public void setTongzhifasongzhuangtai(String tongzhifasongzhuangtai) {
+		this.tongzhifasongzhuangtai = tongzhifasongzhuangtai;
+	}
+	/**
+	 * 获取：通知发送状态(0:未发送,1:已发送,2:部分失败,3:全部失败)
+	 */
+	public String getTongzhifasongzhuangtai() {
+		return tongzhifasongzhuangtai;
+	}
+	/**
+	 * 设置：最后通知发送时间
+	 */
+	public void setZuihoutongzhishijian(Date zuihoutongzhishijian) {
+		this.zuihoutongzhishijian = zuihoutongzhishijian;
+	}
+	/**
+	 * 获取：最后通知发送时间
+	 */
+	public Date getZuihoutongzhishijian() {
+		return zuihoutongzhishijian;
 	}
 
 }
