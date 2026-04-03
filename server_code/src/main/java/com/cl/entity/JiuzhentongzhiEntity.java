@@ -103,6 +103,50 @@ public class JiuzhentongzhiEntity<T> implements Serializable {
 					
 	private String tongzhibeizhu;
 	
+	/**
+	 * 关联预约ID
+	 */
+					
+	private Long yuyueId;
+	
+	/**
+	 * 通知类型
+	 */
+					
+	private String tongzhiType;
+	
+	/**
+	 * 发送状态:0-待发送,1-发送成功,2-发送失败
+	 */
+					
+	private Integer sendStatus;
+	
+	/**
+	 * 重试次数
+	 */
+					
+	private Integer retryCount;
+	
+	/**
+	 * 最大重试次数
+	 */
+					
+	private Integer maxRetry;
+	
+	/**
+	 * 最后发送时间
+	 */
+				
+	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat 		
+	private Date lastSendTime;
+	
+	/**
+	 * 失败原因
+	 */
+					
+	private String failReason;
+	
 
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat
@@ -216,6 +260,83 @@ public class JiuzhentongzhiEntity<T> implements Serializable {
 	 */
 	public String getTongzhibeizhu() {
 		return tongzhibeizhu;
+	}
+
+	/**
+	 * 关联预约ID
+	 */
+	public void setYuyueId(Long yuyueId) {
+		this.yuyueId = yuyueId;
+	}
+
+	public Long getYuyueId() {
+		return yuyueId;
+	}
+
+	/**
+	 * 通知类型
+	 */
+	public void setTongzhiType(String tongzhiType) {
+		this.tongzhiType = tongzhiType;
+	}
+
+	public String getTongzhiType() {
+		return tongzhiType;
+	}
+
+	/**
+	 * 发送状态:0-待发送,1-发送成功,2-发送失败
+	 */
+	public void setSendStatus(Integer sendStatus) {
+		this.sendStatus = sendStatus;
+	}
+
+	public Integer getSendStatus() {
+		return sendStatus;
+	}
+
+	/**
+	 * 重试次数
+	 */
+	public void setRetryCount(Integer retryCount) {
+		this.retryCount = retryCount;
+	}
+
+	public Integer getRetryCount() {
+		return retryCount;
+	}
+
+	/**
+	 * 最大重试次数
+	 */
+	public void setMaxRetry(Integer maxRetry) {
+		this.maxRetry = maxRetry;
+	}
+
+	public Integer getMaxRetry() {
+		return maxRetry;
+	}
+
+	/**
+	 * 最后发送时间
+	 */
+	public void setLastSendTime(Date lastSendTime) {
+		this.lastSendTime = lastSendTime;
+	}
+
+	public Date getLastSendTime() {
+		return lastSendTime;
+	}
+
+	/**
+	 * 失败原因
+	 */
+	public void setFailReason(String failReason) {
+		this.failReason = failReason;
+	}
+
+	public String getFailReason() {
+		return failReason;
 	}
 
 }

@@ -191,6 +191,86 @@ public class JiuzhentongzhiController {
         return R.ok();
     }
     
+    /**
+     * 手动重试发送通知
+     */
+    @RequestMapping("/retry/{id}")
+    @SysLog("重试发送通知")
+    public R retry(@PathVariable Long id){
+        JiuzhentongzhiEntity notification = jiuzhentongzhiService.selectById(id);
+        if (notification == null) {
+            return R.error("通知不存在");
+        }
+        boolean success = jiuzhentongzhiService.sendNotification(notification);
+        if (success) {
+            return R.ok("通知重发成功");
+        } else {
+            return R.error("通知重发失败");
+        }
+    }
+    
+    /**
+     * 批量重试发送失败通知
+     */
+    @RequestMapping("/retryBatch")
+    @SysLog("批量重试通知")
+    public R retryBatch(@RequestBody Long[] ids){
+        int successCount = 0;
+        int failCount = 0;
+        for (Long id : ids) {
+            JiuzhentongzhiEntity notification = jiuzhentongzhiService.selectById(id);
+            if (notification != null) {
+                boolean success = jiuzhentongzhiService.sendNotification(notification);
+                if (success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            }
+        }
+        return R.ok("重试完成，成功：" + successCount + "，失败：" + failCount);
+    }
+    
+    /**
+     * 统计通知发送状态
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request){
+        EntityWrapper<JiuzhentongzhiEntity> wrapper = new EntityWrapper<>();
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if ("yisheng".equals(tableName)) {
+            wrapper.eq("yishengzhanghao", request.getSession().getAttribute("username"));
+        } else if ("yonghu".equals(tableName)) {
+            wrapper.eq("zhanghao", request.getSession().getAttribute("username"));
+        }
+        
+        int total = jiuzhentongzhiService.selectCount(wrapper);
+        
+        wrapper = new EntityWrapper<>();
+        if ("yisheng".equals(tableName)) {
+            wrapper.eq("yishengzhanghao", request.getSession().getAttribute("username"));
+        } else if ("yonghu".equals(tableName)) {
+            wrapper.eq("zhanghao", request.getSession().getAttribute("username"));
+        }
+        wrapper.eq("send_status", 1);
+        int success = jiuzhentongzhiService.selectCount(wrapper);
+        
+        wrapper = new EntityWrapper<>();
+        if ("yisheng".equals(tableName)) {
+            wrapper.eq("yishengzhanghao", request.getSession().getAttribute("username"));
+        } else if ("yonghu".equals(tableName)) {
+            wrapper.eq("zhanghao", request.getSession().getAttribute("username"));
+        }
+        wrapper.eq("send_status", 2);
+        int failed = jiuzhentongzhiService.selectCount(wrapper);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("success", success);
+        result.put("failed", failed);
+        return R.ok().put("data", result);
+    }
+    
 	
 
 

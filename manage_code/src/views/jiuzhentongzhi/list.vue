@@ -23,6 +23,19 @@
 							</el-input>
 						</div>
 					</div>
+					<div class="search_view">
+						<div class="search_label">
+							发送状态：
+						</div>
+						<div class="search_box">
+							<el-select class="search_inp" v-model="searchQuery.sendStatus" placeholder="发送状态" clearable>
+								<el-option label="全部" value=""></el-option>
+								<el-option label="待发送" :value="0"></el-option>
+								<el-option label="发送成功" :value="1"></el-option>
+								<el-option label="发送失败" :value="2"></el-option>
+							</el-select>
+						</div>
+					</div>
 					<div class="search_btn_view">
 						<el-button class="search_btn" type="primary" @click="searchClick()" size="small">搜索</el-button>
 					</div>
@@ -35,6 +48,14 @@
 					<el-button class="del_btn" type="danger" :disabled="selRows.length?false:true" @click="delClick(null)"  v-if="btnAuth('jiuzhentongzhi','删除')">
 						<i class="iconfont icon-shanchu4"></i>
 						删除
+					</el-button>
+					<el-button class="retry_btn" type="warning" :disabled="selRows.length?false:true" @click="retryBatchClick"  v-if="btnAuth('jiuzhentongzhi','重试')">
+						<i class="iconfont icon-xinxi"></i>
+						批量重试
+					</el-button>
+					<el-button class="stat_btn" type="info" @click="statisticsClick"  v-if="btnAuth('jiuzhentongzhi','统计')">
+						<i class="iconfont icon-tongji"></i>
+						查看统计
 					</el-button>
 				</div>
 			</div>
@@ -51,7 +72,7 @@
 				<el-table-column label="序号" width="70" :resizable='true' align="left" header-align="left">
 					<template #default="scope">{{ (listQuery.page-1)*listQuery.limit+scope.$index + 1}}</template>
 				</el-table-column>
-				<el-table-column min-width="140"
+				<el-table-column min-width="120"
 					:resizable='true'
 					:sortable='true'
 					align="left"
@@ -62,7 +83,18 @@
 						{{scope.row.tongzhibianhao}}
 					</template>
 				</el-table-column>
-				<el-table-column min-width="140"
+				<el-table-column min-width="100"
+					:resizable='true'
+					:sortable='true'
+					align="left"
+					header-align="left"
+					prop="tongzhiType"
+					label="通知类型">
+					<template #default="scope">
+						{{scope.row.tongzhiType}}
+					</template>
+				</el-table-column>
+				<el-table-column min-width="100"
 					:resizable='true'
 					:sortable='true'
 					align="left"
@@ -73,40 +105,7 @@
 						{{scope.row.yishengzhanghao}}
 					</template>
 				</el-table-column>
-				<el-table-column min-width="140"
-					:resizable='true'
-					:sortable='true'
-					align="left"
-					header-align="left"
-					prop="dianhua"
-					label="电话">
-					<template #default="scope">
-						{{scope.row.dianhua}}
-					</template>
-				</el-table-column>
-				<el-table-column min-width="140"
-					:resizable='true'
-					:sortable='true'
-					align="left"
-					header-align="left"
-					prop="jiuzhenshijian"
-					label="就诊时间">
-					<template #default="scope">
-						{{scope.row.jiuzhenshijian}}
-					</template>
-				</el-table-column>
-				<el-table-column min-width="140"
-					:resizable='true'
-					:sortable='true'
-					align="left"
-					header-align="left"
-					prop="tongzhishijian"
-					label="通知时间">
-					<template #default="scope">
-						{{scope.row.tongzhishijian}}
-					</template>
-				</el-table-column>
-				<el-table-column min-width="140"
+				<el-table-column min-width="100"
 					:resizable='true'
 					:sortable='true'
 					align="left"
@@ -117,15 +116,50 @@
 						{{scope.row.zhanghao}}
 					</template>
 				</el-table-column>
-				<el-table-column min-width="140"
+				<el-table-column min-width="120"
 					:resizable='true'
 					:sortable='true'
 					align="left"
 					header-align="left"
-					prop="shouji"
-					label="手机">
+					prop="jiuzhenshijian"
+					label="就诊时间">
 					<template #default="scope">
-						{{scope.row.shouji}}
+						{{scope.row.jiuzhenshijian}}
+					</template>
+				</el-table-column>
+				<el-table-column min-width="120"
+					:resizable='true'
+					:sortable='true'
+					align="left"
+					header-align="left"
+					prop="tongzhishijian"
+					label="通知时间">
+					<template #default="scope">
+						{{scope.row.tongzhishijian}}
+					</template>
+				</el-table-column>
+				<el-table-column min-width="90"
+					:resizable='true'
+					:sortable='true'
+					align="left"
+					header-align="left"
+					prop="sendStatus"
+					label="发送状态">
+					<template #default="scope">
+						<el-tag v-if="scope.row.sendStatus == 0" type="info">待发送</el-tag>
+						<el-tag v-else-if="scope.row.sendStatus == 1" type="success">发送成功</el-tag>
+						<el-tag v-else-if="scope.row.sendStatus == 2" type="danger">发送失败</el-tag>
+					</template>
+				</el-table-column>
+				<el-table-column min-width="80"
+					:resizable='true'
+					:sortable='true'
+					align="left"
+					header-align="left"
+					prop="retryCount"
+					label="重试次数">
+					<template #default="scope">
+						{{scope.row.retryCount}} / {{scope.row.maxRetry}}
 					</template>
 				</el-table-column>
 				<el-table-column min-width="140"
@@ -133,13 +167,26 @@
 					:sortable='true'
 					align="left"
 					header-align="left"
-					prop="tongzhibeizhu"
-					label="通知备注">
+					prop="lastSendTime"
+					label="最后发送时间">
 					<template #default="scope">
-						{{scope.row.tongzhibeizhu}}
+						{{scope.row.lastSendTime}}
 					</template>
 				</el-table-column>
-				<el-table-column label="操作" width="300" :resizable='true' :sortable='true' align="left" header-align="left">
+				<el-table-column min-width="150"
+					:resizable='true'
+					:sortable='true'
+					align="left"
+					header-align="left"
+					prop="failReason"
+					label="失败原因">
+					<template #default="scope">
+						<el-tooltip v-if="scope.row.failReason" :content="scope.row.failReason" placement="top">
+							<span style="cursor: pointer; max-width: 140px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{scope.row.failReason}}</span>
+						</el-tooltip>
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" width="400" :resizable='true' :sortable='true' align="left" header-align="left">
 					<template #default="scope">
 						<el-button class="view_btn" type="info" v-if=" btnAuth('jiuzhentongzhi','查看')" @click="infoClick(scope.row.id)">
 							<i class="iconfont icon-sousuo2"></i>
@@ -147,13 +194,15 @@
 						</el-button>
 						<el-button class="edit_btn" type="primary" @click="editClick(scope.row.id)" v-if=" btnAuth('jiuzhentongzhi','修改')">
 							<i class="iconfont icon-xiugai5"></i>
-							修改						</el-button>
+							修改
+						</el-button>
+						<el-button class="retry_btn" type="warning" @click="retryClick(scope.row.id)" v-if="btnAuth('jiuzhentongzhi','重试') && scope.row.sendStatus == 2">
+							<i class="iconfont icon-xinxi"></i>
+							重试
+						</el-button>
 						<el-button class="del_btn" type="danger" @click="delClick(scope.row.id)"  v-if="btnAuth('jiuzhentongzhi','删除')">
 							<i class="iconfont icon-shanchu4"></i>
-							删除						</el-button>
-						<el-button class="cross_btn" v-if="btnAuth('jiuzhentongzhi','签到')" type="success" @click="jiuzhenqiandaoCrossAddOrUpdateHandler(scope.row,'cross','','','','')">
-							<i class="iconfont icon-dingdan3"></i>
-							签到
+							删除
 						</el-button>
 					</template>
 				</el-table-column>
@@ -174,6 +223,21 @@
 		</div>
 		<formModel ref="formRef" @formModelChange="formModelChange"></formModel>
 		<jiuzhenqiandaoFormModel ref="jiuzhenqiandaoFormModelRef" @formModelChange="formModelChange"></jiuzhenqiandaoFormModel>
+		
+		<el-dialog v-model="statisticsDialogVisible" title="通知发送统计" width="500px">
+			<el-descriptions :column="2" border v-if="statisticsData">
+				<el-descriptions-item label="总通知数">{{statisticsData.total}}</el-descriptions-item>
+				<el-descriptions-item label="发送成功">
+					<el-tag type="success">{{statisticsData.success}}</el-tag>
+				</el-descriptions-item>
+				<el-descriptions-item label="发送失败">
+					<el-tag type="danger">{{statisticsData.fail}}</el-tag>
+				</el-descriptions-item>
+				<el-descriptions-item label="待发送">
+					<el-tag type="info">{{statisticsData.pending}}</el-tag>
+				</el-descriptions-item>
+			</el-descriptions>
+		</el-dialog>
 	</div>
 </template>
 <script setup>
@@ -203,15 +267,14 @@
 	const avatar = ref(store.state.user.avatar)
 	const context = getCurrentInstance()?.appContext.config.globalProperties;
 	import formModel from './formModel.vue'
-	//基础信息
-
+	
 	const tableName = 'jiuzhentongzhi'
 	const formName = '就诊通知'
 	const route = useRoute()
-	//基础信息
+	
 	onMounted(()=>{
 	})
-	//列表数据
+	
 	const list = ref(null)
 	const table = ref(null)
 	const listQuery = ref({
@@ -223,13 +286,16 @@
 	const searchQuery = ref({})
 	const selRows = ref([])
 	const listLoading = ref(false)
+	
+	const statisticsDialogVisible = ref(false)
+	const statisticsData = ref(null)
+	
 	const listChange = (row) =>{
 		nextTick(()=>{
-			//table.value.clearSelection()
 			table.value.toggleRowSelection(row)
 		})
 	}
-	//列表
+	
 	const getList = () => {
 		listLoading.value = true
 		let params = JSON.parse(JSON.stringify(listQuery.value))
@@ -241,6 +307,9 @@
 		if(searchQuery.value.zhanghao&&searchQuery.value.zhanghao!=''){
 			params['zhanghao'] = '%' + searchQuery.value.zhanghao + '%'
 		}
+		if(searchQuery.value.sendStatus!=null&&searchQuery.value.sendStatus!=''){
+			params['sendStatus'] = searchQuery.value.sendStatus
+		}
 		context.$http({
 			url: `${tableName}/page`,
 			method: 'get',
@@ -251,7 +320,7 @@
 			total.value = Number(res.data.data.total)
 		})
 	}
-	//删
+	
 	const delClick = (id) => {
 		let ids = ref([])
 		if (id) {
@@ -281,12 +350,65 @@
 			})
 		}).catch(_ => {})
 	}
-	//多选
+	
+	const retryClick = (id) => {
+		ElMessageBox.confirm('是否重试发送此通知？', '提示', {
+			confirmButtonText: '是',
+			cancelButtonText: '否',
+			type: 'warning',
+		}).then(() => {
+			context.$http({
+				url: `${tableName}/retry/${id}`,
+				method: 'post'
+			}).then(res => {
+				context?.$toolUtil.message('重试成功', 'success',()=>{
+					getList()
+				})
+			})
+		}).catch(_ => {})
+	}
+	
+	const retryBatchClick = () => {
+		if (!selRows.value.length) {
+			context?.$toolUtil.message('请选择要重试的通知', 'error')
+			return
+		}
+		let ids = selRows.value.filter(row => row.sendStatus == 2).map(row => row.id)
+		if (!ids.length) {
+			context?.$toolUtil.message('请选择发送失败的通知进行重试', 'error')
+			return
+		}
+		ElMessageBox.confirm(`是否批量重试选中的${ids.length}条失败通知？`, '提示', {
+			confirmButtonText: '是',
+			cancelButtonText: '否',
+			type: 'warning',
+		}).then(() => {
+			context.$http({
+				url: `${tableName}/retryBatch`,
+				method: 'post',
+				data: ids
+			}).then(res => {
+				context?.$toolUtil.message('批量重试成功', 'success',()=>{
+					getList()
+				})
+			})
+		}).catch(_ => {})
+	}
+	
+	const statisticsClick = () => {
+		context.$http({
+			url: `${tableName}/statistics`,
+			method: 'get'
+		}).then(res => {
+			statisticsData.value = res.data.data
+			statisticsDialogVisible.value = true
+		})
+	}
+	
 	const handleSelectionChange = (e) => {
 		selRows.value = e
 	}
-	//列表数据
-	//分页
+	
 	const total = ref(0)
 	const layouts = ref(["total","prev","pager","next","sizes","jumper"])
 	const sizeChange = (size) => {
@@ -297,17 +419,16 @@
 		listQuery.value.page = page
 		getList()
 	}
-	//分页
-	//权限验证
+	
 	const btnAuth = (e,a)=>{
 		return context?.$toolUtil.isAuth(e,a)
 	}
-	//搜索
+	
 	const searchClick = () => {
 		listQuery.value.page = 1
 		getList()
 	}
-	//表单
+	
 	const formRef = ref(null)
 	const formModelChange=()=>{
 		searchClick()
@@ -333,15 +454,14 @@
 			formRef.value.init(selRows.value[0].id,'info')
 		}
 	}
-	// 表单
-	// 预览文件
+	
 	const preClick = (file) =>{
 		if(!file){
 			context?.$toolUtil.message('文件不存在','error')
 		}
 		window.open(context?.$config.url + file)
 	}
-	// 下载文件
+	
 	const download = (file) => {
 		if(!file){
 			context?.$toolUtil.message('文件不存在','error')
@@ -363,8 +483,6 @@
 			const a = document.createElement('a')
 			a.href = objectUrl
 			a.download = arr
-			// a.click()
-			// 下面这个写法兼容火狐
 			a.dispatchEvent(new MouseEvent('click', {
 				bubbles: true,
 				cancelable: true,
@@ -373,6 +491,7 @@
 			window.URL.revokeObjectURL(data)
 		})
 	}
+	
 	import jiuzhenqiandaoFormModel from '@/views/jiuzhenqiandao/formModel'
 	const jiuzhenqiandaoFormModelRef = ref(null)
     const jiuzhenqiandaoCrossAddOrUpdateHandler = (row,type,crossOptAudit,crossOptPay,statusColumnName,tips,statusColumnValue) => {
@@ -389,7 +508,7 @@
 			jiuzhenqiandaoFormModelRef.value.init(row.id,'cross','签到',row,'jiuzhentongzhi',statusColumnName,tips,statusColumnValue)
 		})
     }
-	//初始化
+	
 	const init = () => {
 		getList()
 	}
@@ -397,61 +516,46 @@
 </script>
 <style lang="scss" scoped>
 
-	// 操作盒子
 	.list_search_view {
-		// 搜索盒子
 		.search_form {
-			// 子盒子
 			.search_view {
-				// 搜索label
 				.search_label {
 				}
-				// 搜索item
 				.search_box {
-					// 输入框
 					:deep(.search_inp) {
 					}
 				}
 			}
-			// 搜索按钮盒子
 			.search_btn_view {
-				// 搜索按钮
 				.search_btn {
 				}
-				// 搜索按钮-悬浮
 				.search_btn:hover {
 				}
 			}
 		}
-		//头部按钮盒子
 		.btn_view {
-			// 其他
 			:deep(.el-button--default){
 			}
-			// 其他-悬浮
 			:deep(.el-button--default:hover){
 			}
-			// 新增
 			:deep(.el-button--success){
 			}
-			// 新增-悬浮
 			:deep(.el-button--success:hover){
 			}
-			// 删除
 			:deep(.el-button--danger){
 			}
-			// 删除-悬浮
 			:deep(.el-button--danger:hover){
 			}
-			// 统计
 			:deep(.el-button--warning){
 			}
-			// 统计-悬浮
 			:deep(.el-button--warning:hover){
+			}
+			:deep(.el-button--info){
+			}
+			:deep(.el-button--info:hover){
 			}
 		}
 	}
-	// 表格样式
 	.el-table {
 		:deep(.el-table__header-wrapper) {
 			thead {
@@ -468,34 +572,24 @@
 				tr {
 					td {
 						.cell {
-							// 编辑
 							.el-button--primary {
 							}
-							// 编辑-悬浮
 							.el-button--primary:hover {
 							}
-							// 详情
 							.el-button--info {
 							}
-							// 详情-悬浮
 							.el-button--info:hover {
 							}
-							// 删除
 							.el-button--danger {
 							}
-							// 删除-悬浮
 							.el-button--danger:hover {
 							}
-							// 跨表
 							.el-button--success {
 							}
-							// 跨表-悬浮
 							.el-button--success:hover {
 							}
-							// 操作
 							.el-button--warning {
 							}
-							// 操作-悬浮
 							.el-button--warning:hover {
 							}
 						}
@@ -508,36 +602,25 @@
 			}
 		}
 	}
-	// 分页器
 	.el-pagination {
-		// 总页码
 		:deep(.el-pagination__total) {
 		}
-		// 上一页
 		:deep(.btn-prev) {
 		}
-		// 下一页
 		:deep(.btn-next) {
 		}
-		// 上一页禁用
 		:deep(.btn-prev:disabled) {
 		}
-		// 下一页禁用
 		:deep(.btn-next:disabled) {
 		}
-		// 页码
 		:deep(.el-pager) {
-			// 数字
 			.number {
 			}
-			// 数字悬浮
 			.number:hover {
 			}
-			// 选中
 			.number.is-active {
 			}
 		}
-		// sizes
 		:deep(.el-pagination__sizes) {
 			display: inline-block;
 			vertical-align: top;
@@ -547,9 +630,7 @@
 			.el-select {
 			}
 		}
-		// 跳页
 		:deep(.el-pagination__jump) {
-			// 输入框
 			.el-input {
 			}
 		}

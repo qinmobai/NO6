@@ -8,23 +8,35 @@
 							<el-input class="list_inp" v-model="form.tongzhibianhao" :readonly="true" placeholder="通知编号" />
 						</el-form-item>
 					</el-col>
-					<el-col :span="24">
+					<el-col :span="12">
+						<el-form-item label="通知类型" prop="tongzhiType">
+							<el-input class="list_inp" v-model="form.tongzhiType" placeholder="通知类型"
+                                type="text"
+								:readonly="true" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="发送状态" prop="sendStatus">
+							<el-tag v-if="form.sendStatus == 0" type="info">待发送</el-tag>
+							<el-tag v-else-if="form.sendStatus == 1" type="success">发送成功</el-tag>
+							<el-tag v-else-if="form.sendStatus == 2" type="danger">发送失败</el-tag>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
 						<el-form-item label="医生账号" prop="yishengzhanghao">
 							<el-input class="list_inp" v-model="form.yishengzhanghao" placeholder="医生账号"
                                 type="text"
 								:readonly="!isAdd||disabledForm.yishengzhanghao?true:false" />
 						</el-form-item>
 					</el-col>
-
-					<el-col :span="24">
+					<el-col :span="12">
 						<el-form-item label="电话" prop="dianhua">
 							<el-input class="list_inp" v-model="form.dianhua" placeholder="电话"
                                 type="text"
 								:readonly="!isAdd||disabledForm.dianhua?true:false" />
 						</el-form-item>
 					</el-col>
-
-					<el-col :span="24">
+					<el-col :span="12">
 						<el-form-item label="就诊时间" prop="jiuzhenshijian">
 							<el-date-picker
 								class="list_date"
@@ -36,7 +48,7 @@
 								placeholder="请选择就诊时间" />
 						</el-form-item>
 					</el-col>
-					<el-col :span="24">
+					<el-col :span="12">
 						<el-form-item label="通知时间" prop="tongzhishijian">
 							<el-date-picker
 								class="list_date"
@@ -48,22 +60,43 @@
 								placeholder="请选择通知时间" />
 						</el-form-item>
 					</el-col>
-					<el-col :span="24">
+					<el-col :span="12">
 						<el-form-item label="账号" prop="zhanghao">
 							<el-input class="list_inp" v-model="form.zhanghao" placeholder="账号"
                                 type="text"
 								:readonly="!isAdd||disabledForm.zhanghao?true:false" />
 						</el-form-item>
 					</el-col>
-
-					<el-col :span="24">
+					<el-col :span="12">
 						<el-form-item label="手机" prop="shouji">
 							<el-input class="list_inp" v-model="form.shouji" placeholder="手机"
                                 type="text"
 								:readonly="!isAdd||disabledForm.shouji?true:false" />
 						</el-form-item>
 					</el-col>
-
+					<el-col :span="8">
+						<el-form-item label="重试次数" prop="retryCount">
+							<el-input class="list_inp" v-model="form.retryCount" placeholder="重试次数" :readonly="true" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="8">
+						<el-form-item label="最大重试次数" prop="maxRetry">
+							<el-input class="list_inp" v-model="form.maxRetry" placeholder="最大重试次数" :readonly="true" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="8">
+						<el-form-item label="最后发送时间" prop="lastSendTime">
+							<el-input class="list_inp" v-model="form.lastSendTime" placeholder="最后发送时间" :readonly="true" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="24">
+						<el-form-item label="失败原因" prop="failReason">
+							<el-input class="list_inp" v-model="form.failReason" placeholder="失败原因"
+                                type="textarea"
+                                :rows="3"
+								:readonly="true" />
+						</el-form-item>
+					</el-col>
 					<el-col :span="24">
 						<el-form-item label="通知备注" prop="tongzhibeizhu">
 							<el-input class="list_inp" v-model="form.tongzhibeizhu" placeholder="通知备注"
@@ -71,7 +104,6 @@
 								:readonly="!isAdd||disabledForm.tongzhibeizhu?true:false" />
 						</el-form-item>
 					</el-col>
-
 				</el-row>
 			</el-form>
 			<template #footer v-if="isAdd||type=='logistics'||type=='reply'">
@@ -102,11 +134,8 @@
     const user = computed(()=>store.getters['user/session'])
 	const context = getCurrentInstance()?.appContext.config.globalProperties;	
 	const emit = defineEmits(['formModelChange'])
-	//基础信息
 	const tableName = 'jiuzhentongzhi'
 	const formName = '就诊通知'
-	//基础信息
-	//form表单
 	const form = ref({})
 	const disabledForm = ref({
         tongzhibianhao : false,
@@ -140,17 +169,14 @@
 		tongzhibeizhu: [
 		],
 	})
-	//表单验证
 	
 	const formRef = ref(null)
 	const id = ref(0)
 	const type = ref('')
 
-	//获取唯一标识
 	const getUUID =()=> {
       return new Date().getTime();
     }
-	//重置
 	const resetForm = () => {
 		form.value = {
 			tongzhibianhao: getUUID(),
@@ -161,9 +187,14 @@
 			zhanghao: '',
 			shouji: '',
 			tongzhibeizhu: '',
+			tongzhiType: '',
+			sendStatus: 0,
+			retryCount: 0,
+			maxRetry: 3,
+			lastSendTime: '',
+			failReason: '',
 		}
 	}
-	//获取info
 	const getInfo = ()=>{
 		context?.$http({
 			url: `${tableName}/info/${id.value}`,
@@ -179,7 +210,6 @@
 	const crossTips = ref('')
 	const crossColumnName = ref('')
 	const crossColumnValue = ref('')
-	//初始化
 	const init=(formId=null,formType='add',formNames='',row=null,table=null,statusColumnName=null,tips=null,statusColumnValue=null)=>{
 		resetForm()
 			form.value.tongzhishijian = context?.$toolUtil.getCurDateTime()
@@ -203,7 +233,6 @@
 		else if(formType == 'cross'){
 			isAdd.value = true
 			formTitle.value = formNames
-			// getInfo()
 			for(let x in row){
 				if(x=='tongzhibianhao'){
 					form.value.tongzhibianhao = row[x];
@@ -271,20 +300,19 @@
 			var json = res.data.data
 		})
 	}
-	//初始化
-	//声明父级调用
+	
 	defineExpose({
 		init
 	})
-	//关闭
+	
 	const closeClick = () => {
 		formVisible.value = false
 	}
-	//富文本
+	
 	const editorChange = (e,name) =>{
 		form.value[name] = e
 	}
-	//提交
+	
 	const save= async ()=>{
 		var table = crossTable.value
 		var objcross = JSON.parse(JSON.stringify(crossRow.value))
@@ -299,7 +327,6 @@
 							objcross[o] = crossColumnValue.value
 						}
 					}
-					//修改跨表数据
 					changeCrossData(objcross)
 				}else{
 					crossUserId = user.value.id
@@ -355,7 +382,7 @@
             }
 		})
 	}
-	//修改跨表数据
+	
 	const changeCrossData = async (row)=>{
         if(type.value == 'cross'){
             await context?.$http({
@@ -367,25 +394,18 @@
 	}
 </script>
 <style lang="scss" scoped>
-	// 表单
 	.formModel_form{
-		// form item
 		:deep(.el-form-item) {
-			//label
 			.el-form-item__label {
 			}
-			// 内容盒子
 			.el-form-item__content {
-				// 输入框
 				.list_inp {
 				}
-				//日期选择器
 				.list_date {
 				}
 			}
 		}
 	}
-	// 按钮盒子
 	.formModel_btn_box {
 		.cancel_btn {
 		}
